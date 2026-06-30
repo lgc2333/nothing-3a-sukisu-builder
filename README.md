@@ -38,13 +38,10 @@ After a plain SukiSU build succeeds, enable KPM and SUSFS in separate runs so fa
 
 ## Output
 
-The workflow uploads:
+The workflow uploads two artifacts:
 
-- `build-asteroids.log`
-- `Image`, `Image.gz`, `Image.lz4`
-- `boot.img`, `vendor_boot.img`, `vendor_dlkm.img`, `dtbo.img`, and related images if present
-- `.config`, `Module.symvers`, `System.map`, and module metadata if present
-- `out-file-list.txt` with the full output tree inventory
+- `*-minimal`: daily-use inspection/flashing set, centered on `boot.img`, `boot-gz.img`, `boot-lz4.img`, `Image*`, logs, config, symbols, and output inventory.
+- `*-full`: the minimal set plus device image outputs such as `vendor_boot.img`, `vendor_dlkm.img`, `dtb.img`, `dtbo.img`, and `system_dlkm.img` if present.
 
 Treat artifacts as build outputs to inspect, not guaranteed flashable packages. Match them against the exact installed Nothing OS build before flashing anything.
 

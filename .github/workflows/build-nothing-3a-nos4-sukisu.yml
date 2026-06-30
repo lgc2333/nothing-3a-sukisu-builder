@@ -153,9 +153,16 @@ jobs:
         if: always()
         run: bash .github/scripts/collect-artifacts.sh
 
-      - name: Upload artifacts
+      - name: Upload minimal artifacts
         if: ${{ always() && github.event.inputs.upload_artifacts == 'true' }}
         uses: actions/upload-artifact@v7
         with:
-          name: nothing-3a-nos4-sukisu-${{ github.event.inputs.variant }}
-          path: artifacts/
+          name: nothing-3a-nos4-sukisu-${{ github.event.inputs.variant }}-minimal
+          path: artifacts-minimal/
+
+      - name: Upload full artifacts
+        if: ${{ always() && github.event.inputs.upload_artifacts == 'true' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: nothing-3a-nos4-sukisu-${{ github.event.inputs.variant }}-full
+          path: artifacts-full/

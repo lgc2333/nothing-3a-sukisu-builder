@@ -55,7 +55,8 @@ Concise notes for future maintainers / AI agents.
 ## Artifacts
 
 - Full `.ko` + `vmlinux` upload is huge, around 1.4 GB.
-- Prefer uploading core images/logs plus `out-file-list.txt`.
+- Upload both minimal and full artifacts from one build; do not require a rebuild just to fetch full outputs.
+- Minimal artifact should center on `boot.img` plus logs/config/symbols/inventory.
 - Known successful plain SukiSU run produced `boot.img`, `vendor_boot.img`, `vendor_dlkm.img`, `dtb.img`, `dtbo.img`, `Image*`, and `System.map`.
 
 ## Flashing Caution

@@ -38,13 +38,10 @@
 
 ## 输出
 
-workflow 会上传：
+workflow 会上传两个 artifact：
 
-- `build-asteroids.log`
-- `Image`、`Image.gz`、`Image.lz4`
-- 如存在：`boot.img`、`vendor_boot.img`、`vendor_dlkm.img`、`dtbo.img` 等镜像
-- 如存在：`.config`、`Module.symvers`、`System.map` 和模块元数据
-- `out-file-list.txt`，记录完整输出目录清单
+- `*-minimal`：日常检查/刷入用，核心是 `boot.img`，同时包含 `boot-gz.img`、`boot-lz4.img`、`Image*`、日志、配置、符号和输出清单。
+- `*-full`：包含 minimal 的全部内容，并额外包含如 `vendor_boot.img`、`vendor_dlkm.img`、`dtb.img`、`dtbo.img`、`system_dlkm.img` 等设备镜像产物。
 
 请把 artifact 当作“待检查的构建产物”，不是无脑可刷包。刷入前必须确认它与你当前安装的 Nothing OS 版本匹配。
 
