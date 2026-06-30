@@ -139,6 +139,7 @@ jobs:
           PY
 
           repo sync -c -j4 --no-tags --fail-fast
+          touch build/BUILD.bazel
 
           git clone --depth=1 --branch "${{ github.event.inputs.kernel_ref }}" \
             "https://github.com/${{ github.event.inputs.kernel_repo }}.git" msm-kernel
@@ -206,6 +207,7 @@ jobs:
           cd aosp
           export CCACHE_DIR="$HOME/.ccache"
           ./msm-kernel/build_with_bazel.py \
+            -s abl \
             -t pitti "${{ github.event.inputs.variant }}" \
             2>&1 | tee "$GITHUB_WORKSPACE/build-asteroids.log"
 
