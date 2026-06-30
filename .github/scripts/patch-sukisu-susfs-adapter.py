@@ -36,7 +36,7 @@ def patch_tree(tree: Path) -> None:
     if not ksu.exists():
         raise SystemExit(f"{ksu}: missing SukiSU tree")
 
-    replace_once(
+    replace_optional(
         ksu / "feature" / "selinux_hide.c",
         "static bool ksu_selinux_hide_enabled __read_mostly = false;\n"
         "static bool ksu_selinux_hide_running __read_mostly = false;",
@@ -48,7 +48,7 @@ def patch_tree(tree: Path) -> None:
         "static struct selinux_state fake_state;",
         "struct selinux_state fake_state;",
     )
-    replace_once(
+    replace_optional(
         ksu / "feature" / "selinux_hide.c",
         "static DEFINE_STATIC_KEY_FALSE(fake_status_initialize_key);\n"
         "static struct page *fake_status = NULL;\n\n"
