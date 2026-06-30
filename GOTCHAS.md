@@ -12,6 +12,8 @@ Concise notes for future maintainers / AI agents.
 
 ## Workspace Setup
 
+- Workflow orchestration lives in `.github/workflows/`; long logic lives in `.github/scripts/`.
+- Keep shell scripts small and pass workflow inputs through env vars.
 - Use AOSP kernel manifest `common-android14-6.1-2025-05`.
 - Its default revision must be rewritten to `deprecated/android14-6.1-2025-05`.
 - Create `build/BUILD.bazel`; Nothing's Bazel files expect `//build`.

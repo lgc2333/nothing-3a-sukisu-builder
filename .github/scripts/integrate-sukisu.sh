@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+: "${SUKISU_REF:?}"
+: "${ENABLE_KPM:?}"
+
+cd aosp/msm-kernel
+curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/${SUKISU_REF}/kernel/setup.sh" | bash -s "$SUKISU_REF"
+cd ..
+
+for config in \
+  msm-kernel/arch/arm64/configs/gki_defconfig \
+  msm-kernel/arch/arm64/configs/vendor/Asteroids.config
+do
+  {
+    echo "# SukiSU Ultra"
+    echo "CONFIG_KSU=y"
+    if [ "$ENABLE_KPM" = "true" ]; then
+      echo "CONFIG_KPM=y"
+    fi
+  } >> "$config"
+done

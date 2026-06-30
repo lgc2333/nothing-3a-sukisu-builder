@@ -125,233 +125,33 @@ jobs:
           sudo mv repo /usr/local/bin/repo
 
       - name: Prepare AOSP kernel workspace
-        run: |
-          mkdir aosp
-          cd aosp
-          repo init --depth=1 \
-            -u https://android.googlesource.com/kernel/manifest \
-            -b "${{ github.event.inputs.aosp_manifest_branch }}" \
-            --repo-rev=v2.54
-
-          python3 - <<'PY'
-          from pathlib import Path
-
-          manifest = Path(".repo/manifests/default.xml")
-          text = manifest.read_text()
-          branch = "${{ github.event.inputs.aosp_manifest_branch }}".replace("common-", "")
-          text = text.replace(f'revision="{branch}"', f'revision="deprecated/{branch}"')
-          manifest.write_text(text)
-          PY
-
-          repo sync -c -j4 --no-tags --fail-fast
-          touch build/BUILD.bazel
-
-          if ! grep -q "super_image = " build/kernel/kleaf/kernel.bzl; then
-            curl --fail --location --show-error --silent --retry 5 --retry-delay 5 \
-              "https://android.googlesource.com/kernel/build/+/a32179752cfe632775839e1592c9d7f945d54fe1/kleaf/impl/image/super_image.bzl?format=TEXT" \
-              -o super_image.bzl.base64
-            base64 --decode super_image.bzl.base64 > build/kernel/kleaf/impl/image/super_image.bzl
-            test -s build/kernel/kleaf/impl/image/super_image.bzl
-            python3 - <<'PY'
-          from pathlib import Path
-
-          kernel_bzl = Path("build/kernel/kleaf/kernel.bzl")
-          text = kernel_bzl.read_text()
-          load_line = 'load("//build/kernel/kleaf/impl:image/super_image.bzl", _super_image = "super_image", _unsparsed_image = "unsparsed_image")\n'
-          if load_line not in text:
-              anchor = 'load("//build/kernel/kleaf/impl:image/kernel_images.bzl", _kernel_images = "kernel_images")\n'
-              text = text.replace(anchor, anchor + load_line)
-          if "super_image = _super_image\n" not in text:
-              anchor = "merged_kernel_uapi_headers = _merged_kernel_uapi_headers\n"
-              text = text.replace(anchor, anchor + "super_image = _super_image\nunsparsed_image = _unsparsed_image\n")
-          kernel_bzl.write_text(text)
-          PY
-          fi
-
-          cat >> WORKSPACE <<'EOF'
-
-          local_repository(
-              name = "nt_project_info",
-              path = "nt_project_info",
-          )
-
-          new_local_repository(
-              name = "dtc",
-              path = "external/dtc",
-              build_file = "msm-kernel/BUILD.dtc",
-          )
-          EOF
-          mkdir -p nt_project_info
-          touch nt_project_info/WORKSPACE
-          touch nt_project_info/BUILD.bazel
-          cat > nt_project_info/dict.bzl <<'EOF'
-          TARGET_PRODUCT = "Asteroids"
-          EOF
-
-          git clone --depth=1 --branch "${{ github.event.inputs.kernel_ref }}" \
-            "https://github.com/${{ github.event.inputs.kernel_repo }}.git" msm-kernel
-          git clone --depth=1 --branch "${{ github.event.inputs.dtc_ref }}" \
-            https://android.googlesource.com/platform/external/dtc external/dtc
-
-          python3 - <<'PY'
-          from pathlib import Path
-
-          msm_kernel_la = Path("msm-kernel/msm_kernel_la.bzl")
-          text = msm_kernel_la.read_text()
-          text = text.replace('        ":{}_super_image".format(target),\n', "")
-          text = text.replace('        ":{}_unsparsed_image".format(target),\n', "")
-          msm_kernel_la.write_text(text)
-
-          pitti_bzl = Path("msm-kernel/pitti.bzl")
-          text = pitti_bzl.read_text()
-          marker = '        "drivers/misc/qseecom_proxy.ko",\n'
-          asteroids_modules = [
-              '        "drivers/leds/aw20036/led_aw20036.ko",\n',
-              '        "drivers/misc/cable_detect.ko",\n',
-              '        "drivers/misc/hwid.ko",\n',
-              '        "drivers/misc/ois_vdd_ctrl.ko",\n',
-              '        "drivers/misc/rpmb_state.ko",\n',
-              '        "drivers/misc/secure_state.ko",\n',
-              '        "drivers/misc/slot_detect.ko",\n',
-              '        "drivers/misc/st54spi.ko",\n',
-              '        "drivers/nothing_stability/nothing_error_report.ko",\n',
-          ]
-          if marker not in text:
-              raise SystemExit("pitti.bzl insertion marker not found")
-          insertion = "".join(module for module in asteroids_modules if module not in text)
-          if insertion:
-              text = text.replace(marker, marker + insertion)
-          pitti_bzl.write_text(text)
-
-          modules_list = Path("msm-kernel/modules.list.msm.pitti")
-          text = modules_list.read_text()
-          asteroids_module_names = [
-              "led_aw20036.ko\n",
-              "cable_detect.ko\n",
-              "hwid.ko\n",
-              "ois_vdd_ctrl.ko\n",
-              "rpmb_state.ko\n",
-              "secure_state.ko\n",
-              "slot_detect.ko\n",
-              "st54spi.ko\n",
-              "nothing_error_report.ko\n",
-          ]
-          insertion = "".join(module for module in asteroids_module_names if module not in text)
-          if insertion:
-              text = text.replace("ufs_qcom.ko\n", "ufs_qcom.ko\n" + insertion)
-          modules_list.write_text(text)
-
-          asteroids_config = Path("msm-kernel/arch/arm64/configs/vendor/Asteroids.config")
-          text = asteroids_config.read_text()
-          if "CONFIG_NOTHING_ERROR_REPORT=" not in text:
-              text += "\n# Required by ufs_qcom.ko and qcom_glink.ko Nothing error hooks\nCONFIG_NOTHING_ERROR_REPORT=m\n"
-          asteroids_config.write_text(text)
-          PY
-
-          git -C msm-kernel log -1 --oneline
-          grep -n "Asteroids" msm-kernel/README.md || true
+        env:
+          KERNEL_REPO: ${{ github.event.inputs.kernel_repo }}
+          KERNEL_REF: ${{ github.event.inputs.kernel_ref }}
+          AOSP_MANIFEST_BRANCH: ${{ github.event.inputs.aosp_manifest_branch }}
+          DTC_REF: ${{ github.event.inputs.dtc_ref }}
+        run: bash .github/scripts/prepare-workspace.sh
 
       - name: Integrate SukiSU Ultra
-        run: |
-          cd aosp
-          cd msm-kernel
-          curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/${{ github.event.inputs.sukisu_ref }}/kernel/setup.sh" | bash -s "${{ github.event.inputs.sukisu_ref }}"
-          cd ..
-
-          for config in \
-            msm-kernel/arch/arm64/configs/gki_defconfig \
-            msm-kernel/arch/arm64/configs/vendor/Asteroids.config
-          do
-            {
-              echo "# SukiSU Ultra"
-              echo "CONFIG_KSU=y"
-              if [ "${{ github.event.inputs.enable_kpm }}" = "true" ]; then
-                echo "CONFIG_KPM=y"
-              fi
-            } >> "$config"
-          done
+        env:
+          SUKISU_REF: ${{ github.event.inputs.sukisu_ref }}
+          ENABLE_KPM: ${{ github.event.inputs.enable_kpm }}
+        run: bash .github/scripts/integrate-sukisu.sh
 
       - name: Apply SUSFS patch
         if: ${{ github.event.inputs.enable_susfs == 'true' }}
-        run: |
-          cd aosp
-          git clone --depth=1 --branch "${{ github.event.inputs.susfs_branch }}" \
-            https://gitlab.com/simonpunk/susfs4ksu.git susfs4ksu
-
-          cp susfs4ksu/kernel_patches/50_add_susfs_in_${{ github.event.inputs.susfs_branch }}.patch common/
-          cp susfs4ksu/kernel_patches/fs/* common/fs/
-          cp susfs4ksu/kernel_patches/include/linux/* common/include/linux/
-
-          cd common
-          patch -p1 -F 3 < "50_add_susfs_in_${{ github.event.inputs.susfs_branch }}.patch"
-
-          for config in \
-            arch/arm64/configs/gki_defconfig \
-            ../msm-kernel/arch/arm64/configs/vendor/Asteroids.config
-          do
-            {
-              echo "# SUSFS"
-              echo "CONFIG_KSU_SUSFS=y"
-              echo "CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT=y"
-              echo "CONFIG_KSU_SUSFS_SUS_PATH=y"
-              echo "CONFIG_KSU_SUSFS_SUS_MOUNT=y"
-              echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT=y"
-              echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT=y"
-              echo "CONFIG_KSU_SUSFS_SUS_KSTAT=y"
-              echo "CONFIG_KSU_SUSFS_TRY_UMOUNT=y"
-              echo "CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT=y"
-              echo "CONFIG_KSU_SUSFS_SPOOF_UNAME=y"
-              echo "CONFIG_KSU_SUSFS_ENABLE_LOG=y"
-              echo "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y"
-              echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y"
-              echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y"
-            } >> "$config"
-          done
+        env:
+          SUSFS_BRANCH: ${{ github.event.inputs.susfs_branch }}
+        run: bash .github/scripts/apply-susfs.sh
 
       - name: Build kernel
-        run: |
-          set -o pipefail
-          cd aosp
-          export CCACHE_DIR="$HOME/.ccache"
-          ./msm-kernel/build_with_bazel.py \
-            -s abl \
-            -s dtc \
-            -t pitti "${{ github.event.inputs.variant }}" \
-            2>&1 | tee "$GITHUB_WORKSPACE/build-asteroids.log"
+        env:
+          VARIANT: ${{ github.event.inputs.variant }}
+        run: bash .github/scripts/build-kernel.sh
 
       - name: Collect artifacts
         if: always()
-        run: |
-          mkdir -p artifacts
-          cp build-asteroids.log artifacts/ || true
-
-          if [ -d aosp/out ]; then
-            cd aosp/out
-            find . -type f | sort > "$GITHUB_WORKSPACE/artifacts/out-file-list.txt"
-            while IFS= read -r file; do
-              dest="$GITHUB_WORKSPACE/artifacts/${file#./}"
-              mkdir -p "$(dirname "$dest")"
-              cp "$file" "$dest"
-            done < <(find . -type f \( \
-              -name 'Image' -o \
-              -name 'Image.gz' -o \
-              -name 'Image.lz4' -o \
-              -name 'boot.img' -o \
-              -name 'dtbo.img' -o \
-              -name 'init_boot.img' -o \
-              -name 'system_dlkm.img' -o \
-              -name 'vendor_boot.img' -o \
-              -name 'vendor_dlkm.img' -o \
-              -name 'vendor_kernel_boot.img' -o \
-              -name '.config' -o \
-              -name 'Module.symvers' -o \
-              -name 'System.map' -o \
-              -name 'modules.load' -o \
-              -name 'modules.order' \
-            \))
-          fi
-
-          find "$GITHUB_WORKSPACE/artifacts" -type f -printf '%p\n' | sort
+        run: bash .github/scripts/collect-artifacts.sh
 
       - name: Upload artifacts
         if: ${{ always() && github.event.inputs.upload_artifacts == 'true' }}
