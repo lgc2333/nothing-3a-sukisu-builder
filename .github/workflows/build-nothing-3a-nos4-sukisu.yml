@@ -140,6 +140,18 @@ jobs:
 
           repo sync -c -j4 --no-tags --fail-fast
           touch build/BUILD.bazel
+          cat >> WORKSPACE <<'EOF'
+
+          local_repository(
+              name = "nt_project_info",
+              path = "nt_project_info",
+          )
+          EOF
+          mkdir -p nt_project_info
+          touch nt_project_info/BUILD.bazel
+          cat > nt_project_info/dict.bzl <<'EOF'
+          TARGET_PRODUCT = "Asteroids"
+          EOF
 
           git clone --depth=1 --branch "${{ github.event.inputs.kernel_ref }}" \
             "https://github.com/${{ github.event.inputs.kernel_repo }}.git" msm-kernel
