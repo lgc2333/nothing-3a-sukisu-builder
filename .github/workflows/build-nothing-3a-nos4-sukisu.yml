@@ -30,7 +30,7 @@ on:
         options:
           - consolidate
           - gki
-        default: consolidate
+        default: gki
       sukisu_ref:
         description: SukiSU-Ultra setup ref
         required: true
