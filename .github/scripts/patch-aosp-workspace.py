@@ -26,16 +26,6 @@ def patch_kleaf_exports() -> None:
     kernel_bzl.write_text(text)
 
 
-def patch_common_defconfig_check() -> None:
-    build_bazel = Path("common/BUILD.bazel")
-    text = build_bazel.read_text()
-    marker = '        "make_goals": _GKI_AARCH64_MAKE_GOALS,\n'
-    injection = '        "check_defconfig": False,\n'
-    if marker in text and injection not in text:
-        text = text.replace(marker, marker + injection, 1)
-    build_bazel.write_text(text)
-
-
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("branch")
@@ -44,7 +34,6 @@ def main() -> None:
 
     if args.post_sync:
         patch_kleaf_exports()
-        patch_common_defconfig_check()
     else:
         patch_manifest(args.branch)
 
