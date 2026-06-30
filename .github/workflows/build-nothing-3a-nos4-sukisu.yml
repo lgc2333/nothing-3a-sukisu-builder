@@ -119,13 +119,6 @@ jobs:
           chmod a+x repo
           sudo mv repo /usr/local/bin/repo
 
-      - name: Checkout Nothing kernel source
-        run: |
-          git clone --depth=1 --branch "${{ github.event.inputs.kernel_ref }}" \
-            "https://github.com/${{ github.event.inputs.kernel_repo }}.git" msm-kernel
-          git -C msm-kernel log -1 --oneline
-          grep -n "Asteroids" msm-kernel/README.md || true
-
       - name: Prepare AOSP kernel workspace
         run: |
           mkdir aosp
@@ -146,8 +139,11 @@ jobs:
           PY
 
           repo sync -c -j4 --no-tags --fail-fast
-          rm -rf msm-kernel
-          ln -s ../msm-kernel msm-kernel
+
+          git clone --depth=1 --branch "${{ github.event.inputs.kernel_ref }}" \
+            "https://github.com/${{ github.event.inputs.kernel_repo }}.git" msm-kernel
+          git -C msm-kernel log -1 --oneline
+          grep -n "Asteroids" msm-kernel/README.md || true
 
       - name: Integrate SukiSU Ultra
         run: |
@@ -206,12 +202,12 @@ jobs:
 
       - name: Build kernel
         run: |
+          set -o pipefail
           cd aosp
-          export BUILD_CONFIG=msm-kernel/build.config.nothing.Asteroids
-          export VARIANT="${{ github.event.inputs.variant }}"
-          export SKIP_MRPROPER=1
           export CCACHE_DIR="$HOME/.ccache"
-          build/build.sh 2>&1 | tee "$GITHUB_WORKSPACE/build-asteroids.log"
+          ./msm-kernel/build_with_bazel.py \
+            -t pitti "${{ github.event.inputs.variant }}" \
+            2>&1 | tee "$GITHUB_WORKSPACE/build-asteroids.log"
 
       - name: Collect artifacts
         if: always()
