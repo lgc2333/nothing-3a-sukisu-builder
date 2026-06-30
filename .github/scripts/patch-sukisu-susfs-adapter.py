@@ -14,6 +14,13 @@ def replace_once(path: Path, old: str, new: str) -> None:
     path.write_text(text.replace(old, new, 1))
 
 
+def replace_optional(path: Path, old: str, new: str) -> None:
+    text = path.read_text()
+    if new in text or old not in text:
+        return
+    path.write_text(text.replace(old, new, 1))
+
+
 def append_once(path: Path, marker: str, text: str) -> None:
     current = path.read_text()
     if marker in current:
@@ -36,7 +43,7 @@ def patch_tree(tree: Path) -> None:
         "bool ksu_selinux_hide_enabled __read_mostly = false;\n"
         "bool ksu_selinux_hide_running __read_mostly = false;",
     )
-    replace_once(
+    replace_optional(
         ksu / "feature" / "selinux_hide.c",
         "static struct selinux_state fake_state;",
         "struct selinux_state fake_state;",
