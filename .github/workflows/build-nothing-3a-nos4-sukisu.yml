@@ -1,4 +1,4 @@
-name: Build Nothing 3a NOS4 SukiSU Kernel
+name: Build Nothing 3a NOS4 Kernel
 
 on:
   workflow_dispatch:
@@ -31,6 +31,15 @@ on:
           - consolidate
           - gki
         default: gki
+      root_solution:
+        description: Root integration mode
+        required: true
+        type: choice
+        options:
+          - none
+          - sukisu
+          - sukisu_susfs
+        default: none
       sukisu_ref:
         description: SukiSU-Ultra setup ref
         required: true
@@ -38,11 +47,6 @@ on:
         default: main
       enable_kpm:
         description: Enable SukiSU KPM
-        required: true
-        type: boolean
-        default: false
-      enable_susfs:
-        description: Apply SUSFS kernel patch
         required: true
         type: boolean
         default: false
@@ -133,14 +137,15 @@ jobs:
         run: bash .github/scripts/prepare-workspace.sh
 
       - name: Integrate SukiSU Ultra
+        if: ${{ github.event.inputs.root_solution != 'none' }}
         env:
           SUKISU_REF: ${{ github.event.inputs.sukisu_ref }}
           ENABLE_KPM: ${{ github.event.inputs.enable_kpm }}
-          ENABLE_SUSFS: ${{ github.event.inputs.enable_susfs }}
+          ENABLE_SUSFS: ${{ github.event.inputs.root_solution == 'sukisu_susfs' }}
         run: bash .github/scripts/integrate-sukisu.sh
 
       - name: Apply SUSFS patch
-        if: ${{ github.event.inputs.enable_susfs == 'true' }}
+        if: ${{ github.event.inputs.root_solution == 'sukisu_susfs' }}
         env:
           SUSFS_BRANCH: ${{ github.event.inputs.susfs_branch }}
         run: bash .github/scripts/apply-susfs.sh
@@ -158,12 +163,12 @@ jobs:
         if: ${{ always() && github.event.inputs.upload_artifacts == 'true' }}
         uses: actions/upload-artifact@v7
         with:
-          name: nothing-3a-nos4-sukisu-${{ github.event.inputs.variant }}-minimal
+          name: nothing-3a-nos4-${{ github.event.inputs.root_solution }}-${{ github.event.inputs.variant }}-minimal
           path: artifacts-minimal/
 
       - name: Upload full artifacts
         if: ${{ always() && github.event.inputs.upload_artifacts == 'true' }}
         uses: actions/upload-artifact@v7
         with:
-          name: nothing-3a-nos4-sukisu-${{ github.event.inputs.variant }}-full
+          name: nothing-3a-nos4-${{ github.event.inputs.root_solution }}-${{ github.event.inputs.variant }}-full
           path: artifacts-full/
