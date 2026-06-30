@@ -199,6 +199,26 @@ jobs:
           text = text.replace('        ":{}_super_image".format(target),\n', "")
           text = text.replace('        ":{}_unsparsed_image".format(target),\n', "")
           msm_kernel_la.write_text(text)
+
+          pitti_bzl = Path("msm-kernel/pitti.bzl")
+          text = pitti_bzl.read_text()
+          marker = '        "drivers/misc/slatecom_interface.ko",\n'
+          module = '        "drivers/nothing_stability/nothing_error_report.ko",\n'
+          if module not in text:
+              text = text.replace(marker, marker + module)
+          pitti_bzl.write_text(text)
+
+          modules_list = Path("msm-kernel/modules.list.msm.pitti")
+          text = modules_list.read_text()
+          if "nothing_error_report.ko\n" not in text:
+              text = text.replace("ufs_qcom.ko\n", "ufs_qcom.ko\nnothing_error_report.ko\n")
+          modules_list.write_text(text)
+
+          asteroids_config = Path("msm-kernel/arch/arm64/configs/vendor/Asteroids.config")
+          text = asteroids_config.read_text()
+          if "CONFIG_NOTHING_ERROR_REPORT=" not in text:
+              text += "\n# Required by ufs_qcom.ko and qcom_glink.ko Nothing error hooks\nCONFIG_NOTHING_ERROR_REPORT=m\n"
+          asteroids_config.write_text(text)
           PY
 
           git -C msm-kernel log -1 --oneline
