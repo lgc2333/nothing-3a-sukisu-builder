@@ -142,10 +142,23 @@ jobs:
           touch build/BUILD.bazel
 
           if ! grep -q "super_image = " build/kernel/kleaf/kernel.bzl; then
-            git -C build/kernel fetch --depth=1 \
-              https://android.googlesource.com/kernel/build \
-              a32179752cfe632775839e1592c9d7f945d54fe1
-            git -C build/kernel cherry-pick --no-commit FETCH_HEAD
+            curl -LSs \
+              "https://android.googlesource.com/kernel/build/+/a32179752cfe632775839e1592c9d7f945d54fe1/kleaf/impl/image/super_image.bzl?format=TEXT" \
+              | base64 -d > build/kernel/kleaf/impl/image/super_image.bzl
+            python3 - <<'PY'
+          from pathlib import Path
+
+          kernel_bzl = Path("build/kernel/kleaf/kernel.bzl")
+          text = kernel_bzl.read_text()
+          load_line = 'load("//build/kernel/kleaf/impl:image/super_image.bzl", _super_image = "super_image", _unsparsed_image = "unsparsed_image")\n'
+          if load_line not in text:
+              anchor = 'load("//build/kernel/kleaf/impl:image/kernel_images.bzl", _kernel_images = "kernel_images")\n'
+              text = text.replace(anchor, anchor + load_line)
+          if "super_image = _super_image\n" not in text:
+              anchor = "merged_kernel_uapi_headers = _merged_kernel_uapi_headers\n"
+              text = text.replace(anchor, anchor + "super_image = _super_image\nunsparsed_image = _unsparsed_image\n")
+          kernel_bzl.write_text(text)
+          PY
           fi
 
           cat >> WORKSPACE <<'EOF'
