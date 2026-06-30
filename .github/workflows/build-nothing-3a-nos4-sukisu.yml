@@ -190,6 +190,17 @@ jobs:
             "https://github.com/${{ github.event.inputs.kernel_repo }}.git" msm-kernel
           git clone --depth=1 --branch "${{ github.event.inputs.dtc_ref }}" \
             https://android.googlesource.com/platform/external/dtc external/dtc
+
+          python3 - <<'PY'
+          from pathlib import Path
+
+          msm_kernel_la = Path("msm-kernel/msm_kernel_la.bzl")
+          text = msm_kernel_la.read_text()
+          text = text.replace('        ":{}_super_image".format(target),\n', "")
+          text = text.replace('        ":{}_unsparsed_image".format(target),\n', "")
+          msm_kernel_la.write_text(text)
+          PY
+
           git -C msm-kernel log -1 --oneline
           grep -n "Asteroids" msm-kernel/README.md || true
 
