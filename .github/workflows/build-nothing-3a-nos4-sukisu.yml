@@ -18,6 +18,11 @@ on:
         required: true
         type: string
         default: common-android14-6.1-2025-05
+      dtc_ref:
+        description: AOSP platform/external/dtc branch or tag
+        required: true
+        type: string
+        default: android14-release
       variant:
         description: Nothing build variant
         required: true
@@ -183,6 +188,8 @@ jobs:
 
           git clone --depth=1 --branch "${{ github.event.inputs.kernel_ref }}" \
             "https://github.com/${{ github.event.inputs.kernel_repo }}.git" msm-kernel
+          git clone --depth=1 --branch "${{ github.event.inputs.dtc_ref }}" \
+            https://android.googlesource.com/platform/external/dtc external/dtc
           git -C msm-kernel log -1 --oneline
           grep -n "Asteroids" msm-kernel/README.md || true
 
