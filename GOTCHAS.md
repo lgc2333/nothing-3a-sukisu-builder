@@ -38,10 +38,10 @@ Concise notes for future maintainers / AI agents.
 
 ## SUSFS Status
 
-- Do not append SUSFS symbols to `common/arch/arm64/configs/gki_defconfig`; Kleaf `savedefconfig` removes unknown symbols and fails the build.
-- Patch/copy SUSFS into the tree that actually builds the image (`msm-kernel`) and keep `common` clean enough for its base config target.
-- `susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch` did not apply cleanly to tested SukiSU-Ultra refs (`main`, `v4.1.3`, `v4.1.2`, `v4.1.1`, `v4.1.0`, `v4.0.0`, `v3.2.0`, `v3.1.9`).
-- Current workflow intentionally fails early if that KernelSU/SukiSU SUSFS adapter patch does not apply; a successful SUSFS build needs a compatible SukiSU ref or a local SukiSU-specific adapter.
+- Original community workflows append SUSFS symbols to `common/arch/arm64/configs/gki_defconfig` and disable `check_defconfig`.
+- Without disabling that check, Kleaf `savedefconfig` removes unknown SUSFS symbols and fails the build.
+- For this mixed Nothing build, patch/copy SUSFS into both `common` and `msm-kernel` while testing; the exact minimal tree is still being verified.
+- Do not require `susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch`; the referenced community workflows do not apply it for SukiSU-Ultra.
 
 ## Nothing / Asteroids Module Fixes
 

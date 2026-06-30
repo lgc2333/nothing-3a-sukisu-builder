@@ -16,7 +16,6 @@ for attempt in 1 2 3 4 5; do
 done
 
 kernel_patch="susfs4ksu/kernel_patches/50_add_susfs_in_${SUSFS_BRANCH}.patch"
-ksu_patch="susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch"
 
 for tree in common msm-kernel; do
   cp "$kernel_patch" "$tree/"
@@ -29,17 +28,12 @@ for tree in common msm-kernel; do
   )
 done
 
-(
-  cd msm-kernel/KernelSU
-  if ! patch -p1 -F 3 --dry-run < "../../$ksu_patch"; then
-    echo "::error::SUSFS KernelSU patch does not apply to the selected SukiSU-Ultra ref."
-    echo "::error::Pin a compatible SukiSU ref or add a SukiSU-specific SUSFS adapter before enabling SUSFS."
-    exit 1
-  fi
-  patch -p1 -F 3 < "../../$ksu_patch"
-)
+if [ -f common/build.config.gki ]; then
+  sed -i 's/check_defconfig//g' common/build.config.gki
+fi
 
 for config in \
+  common/arch/arm64/configs/gki_defconfig \
   msm-kernel/arch/arm64/configs/gki_defconfig \
   msm-kernel/arch/arm64/configs/vendor/Asteroids.config
 do
@@ -55,5 +49,10 @@ do
     echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y"
     echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y"
     echo "CONFIG_KSU_SUSFS_SUS_MAP=y"
+    echo "CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT=y"
+    echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT=y"
+    echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT=y"
+    echo "CONFIG_KSU_SUSFS_TRY_UMOUNT=y"
+    echo "CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT=y"
   } >> "$config"
 done

@@ -136,6 +136,7 @@ jobs:
         env:
           SUKISU_REF: ${{ github.event.inputs.sukisu_ref }}
           ENABLE_KPM: ${{ github.event.inputs.enable_kpm }}
+          ENABLE_SUSFS: ${{ github.event.inputs.enable_susfs }}
         run: bash .github/scripts/integrate-sukisu.sh
 
       - name: Apply SUSFS patch
