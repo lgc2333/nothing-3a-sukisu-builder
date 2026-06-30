@@ -35,6 +35,9 @@ def patch_tree(tree: Path) -> None:
         ksu = tree / "KernelSU" / "kernel"
     if not ksu.exists():
         raise SystemExit(f"{ksu}: missing SukiSU tree")
+    if not (ksu / "runtime" / "ksud_integration.c").exists():
+        print(f"{ksu}: no full SukiSU runtime tree, skipping SUSFS adapter")
+        return
 
     replace_optional(
         ksu / "feature" / "selinux_hide.c",
