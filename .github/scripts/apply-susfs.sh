@@ -28,6 +28,8 @@ for tree in common msm-kernel; do
   )
 done
 
+python3 ../.github/scripts/patch-sukisu-susfs-adapter.py common msm-kernel
+
 for ksu_dir in common/KernelSU/kernel msm-kernel/KernelSU/kernel; do
   kconfig="$ksu_dir/Kconfig"
   makefile="$ksu_dir/Makefile"
