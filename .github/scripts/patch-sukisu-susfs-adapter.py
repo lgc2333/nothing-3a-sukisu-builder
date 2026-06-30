@@ -16,9 +16,11 @@ def replace_once(path: Path, old: str, new: str) -> None:
 
 def replace_optional(path: Path, old: str, new: str) -> None:
     text = path.read_text()
-    if new in text or old not in text:
+    if old in text:
+        path.write_text(text.replace(old, new, 1))
         return
-    path.write_text(text.replace(old, new, 1))
+    if new in text:
+        return
 
 
 def append_once(path: Path, marker: str, text: str) -> None:
@@ -26,6 +28,16 @@ def append_once(path: Path, marker: str, text: str) -> None:
     if marker in current:
         return
     path.write_text(current.rstrip() + "\n\n" + text.strip() + "\n")
+
+
+def require_text(path: Path, expected: str) -> None:
+    if expected not in path.read_text():
+        raise SystemExit(f"{path}: required SUSFS adapter text missing: {expected}")
+
+
+def reject_text(path: Path, rejected: str) -> None:
+    if rejected in path.read_text():
+        raise SystemExit(f"{path}: stale SUSFS adapter text remains: {rejected}")
 
 
 def patch_tree(tree: Path) -> None:
@@ -64,7 +76,24 @@ def patch_tree(tree: Path) -> None:
     replace_once(
         ksu / "runtime" / "ksud_integration.c",
         "static void ksu_handle_sys_read(unsigned int fd, char __user **buf_ptr, size_t *count_ptr)",
-        "void ksu_handle_sys_read(unsigned int fd, char __user **buf_ptr, size_t *count_ptr)",
+        "static void ksu_handle_sys_read_impl(unsigned int fd, char __user **buf_ptr, size_t *count_ptr)",
+    )
+    replace_once(
+        ksu / "runtime" / "ksud_integration.c",
+        "    ksu_handle_sys_read(fd, buf_ptr, count_ptr);\n"
+        "    return orig_sys_read(regs);",
+        "    ksu_handle_sys_read_impl(fd, buf_ptr, count_ptr);\n"
+        "    return orig_sys_read(regs);",
+    )
+    append_once(
+        ksu / "runtime" / "ksud_integration.c",
+        "void ksu_handle_sys_read(unsigned int fd)",
+        r'''
+void ksu_handle_sys_read(unsigned int fd)
+{
+    ksu_handle_sys_read_impl(fd, NULL, NULL);
+}
+''',
     )
     replace_once(
         ksu / "runtime" / "ksud_integration.c",
@@ -298,6 +327,12 @@ int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd, void __user 
 }
 ''',
     )
+
+    require_text(ksu / "feature" / "selinux_hide.c", "struct selinux_state fake_state;")
+    reject_text(ksu / "feature" / "selinux_hide.c", "static struct selinux_state fake_state;")
+    require_text(ksu / "runtime" / "ksud_integration.c", "void ksu_handle_sys_read(unsigned int fd)")
+    require_text(ksu / "runtime" / "ksud_integration.c", "ksu_handle_sys_read_impl(fd, buf_ptr, count_ptr);")
+    require_text(ksu / "runtime" / "ksud_integration.c", "void ksu_handle_vfs_fstat(int fd, loff_t *kstat_size_ptr)")
 
 
 def main() -> None:

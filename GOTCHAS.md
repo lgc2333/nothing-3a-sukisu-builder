@@ -52,6 +52,8 @@ Concise notes for future maintainers / AI agents.
 - Put KSU/SUSFS symbols in `gki_defconfig`, not `vendor/Asteroids.config`; duplicated vendor fragment values fail `check_merged_defconfig`.
 - SukiSU-Ultra main does not define SUSFS Kconfig symbols by default; inject minimal symbol definitions rather than applying the full incompatible `10_enable_susfs_for_ksu.patch`.
 - Do not require `susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch`; the referenced community workflows do not apply it for SukiSU-Ultra.
+- Do not test optional text replacements with `new in text` when `new` is a substring of `old`; it skipped exporting `fake_state` from `static struct selinux_state fake_state;`.
+- SUSFS expects `ksu_handle_sys_read(unsigned int fd)`. Current SukiSU has a static 3-argument helper, so keep it as an internal impl and export a one-argument wrapper.
 
 ## Nothing / Asteroids Module Fixes
 
