@@ -1,33 +1,31 @@
 # Nothing Phone (3a) NOS4 SukiSU Kernel Builder
 
-Lightweight GitHub Actions builder for the Nothing Phone (3a) NOS4 kernel.
+English | [简体中文](README.zh-CN.md)
 
-This repository intentionally does not vendor the kernel source. The workflow pulls:
+Lightweight GitHub Actions builder for a Nothing Phone (3a) NOS4 SukiSU kernel based on Nothing's official SM7635 kernel source.
+
+This repo intentionally does not vendor the kernel source. The workflow pulls:
 
 - Nothing kernel source: `NothingOSS/android_kernel_msm-6.1_nothing_sm7635`
 - Default branch: `sm7635/b/mr`
 - Target product: `Asteroids`
+- Build target: `pitti gki`
 - Base AOSP kernel manifest: `common-android14-6.1-2025-05`
 - Root solution: `SukiSU-Ultra`
 
 ## Why This Repo Exists
 
-The Nothing kernel tree contains filenames that are awkward to checkout on Windows, and the real build needs the Android kernel workspace/toolchain anyway. Keeping this repo small makes it easier to iterate on the Actions workflow without maintaining a heavy kernel fork.
+Generic GKI images are convenient, but this builder takes the more device-aligned route: build from Nothing's official NOS4 kernel source and let the vendor/Kleaf build produce the matching boot and DLKM artifacts.
 
-The workflow borrows the general shape from ShirkNeko's builders:
+That should be a better starting point for Nothing Phone (3a) than flashing an unrelated generic GKI image, because the device build also involves vendor modules, DTB/DTBO, `vendor_boot`, and `vendor_dlkm` outputs.
 
-- free runner disk space
-- sync a kernel workspace in Actions
-- patch KernelSU/SukiSU into the tree
-- collect build logs and artifacts
-
-It is not a direct fork of the OnePlus builder because the OnePlus manifest, scripts, CPU names, and output paths do not match Nothing's SM7635 source layout.
+The repo stays small so the Actions workflow can be iterated without maintaining a heavy kernel fork.
 
 ## Build
 
 Run **Actions -> Build Nothing 3a NOS4 SukiSU Kernel -> Run workflow**.
 
-Conservative first run:
+Recommended first run:
 
 - `kernel_repo`: `NothingOSS/android_kernel_msm-6.1_nothing_sm7635`
 - `kernel_ref`: `sm7635/b/mr`
@@ -42,10 +40,14 @@ After a plain SukiSU build succeeds, enable KPM and SUSFS in separate runs so fa
 
 The workflow uploads:
 
-- build log
-- `Image`/compressed images if present
-- generated boot / vendor dlkm / dtbo images if present
-- `.config`, `Module.symvers`, `System.map`, and module load/order metadata if present
+- `build-asteroids.log`
+- `Image`, `Image.gz`, `Image.lz4`
+- `boot.img`, `vendor_boot.img`, `vendor_dlkm.img`, `dtbo.img`, and related images if present
+- `.config`, `Module.symvers`, `System.map`, and module metadata if present
 - `out-file-list.txt` with the full output tree inventory
 
-Treat the first successful artifact as a build output to inspect, not as a guaranteed flashable package. Device-specific packaging and boot/vendor_boot replacement still need to be validated against the exact installed Nothing OS build.
+Treat artifacts as build outputs to inspect, not guaranteed flashable packages. Match them against the exact installed Nothing OS build before flashing anything.
+
+## Notes For Maintainers
+
+See [GOTCHAS.md](GOTCHAS.md) for concise build traps found while making this workflow work.
