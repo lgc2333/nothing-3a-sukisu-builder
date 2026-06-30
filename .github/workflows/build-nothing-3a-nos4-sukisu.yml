@@ -167,6 +167,12 @@ jobs:
               name = "nt_project_info",
               path = "nt_project_info",
           )
+
+          new_local_repository(
+              name = "dtc",
+              path = "external/dtc",
+              build_file = "msm-kernel/BUILD.dtc",
+          )
           EOF
           mkdir -p nt_project_info
           touch nt_project_info/WORKSPACE
