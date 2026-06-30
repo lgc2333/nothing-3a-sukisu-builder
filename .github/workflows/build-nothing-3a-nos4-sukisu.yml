@@ -148,6 +148,7 @@ jobs:
           )
           EOF
           mkdir -p nt_project_info
+          touch nt_project_info/WORKSPACE
           touch nt_project_info/BUILD.bazel
           cat > nt_project_info/dict.bzl <<'EOF'
           TARGET_PRODUCT = "Asteroids"
