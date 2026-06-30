@@ -165,6 +165,7 @@ jobs:
         with:
           name: nothing-3a-nos4-${{ github.event.inputs.root_solution }}-${{ github.event.inputs.variant }}-minimal
           path: artifacts-minimal/
+          include-hidden-files: true
 
       - name: Upload full artifacts
         if: ${{ always() && github.event.inputs.upload_artifacts == 'true' }}
@@ -172,3 +173,4 @@ jobs:
         with:
           name: nothing-3a-nos4-${{ github.event.inputs.root_solution }}-${{ github.event.inputs.variant }}-full
           path: artifacts-full/
+          include-hidden-files: true

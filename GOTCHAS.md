@@ -38,6 +38,7 @@ Concise notes for future maintainers / AI agents.
 
 ## SukiSU Integration
 
+- Run `28475657168` succeeded with `root_solution=sukisu`, `variant=gki`, `enable_kpm=false`.
 - Run SukiSU setup inside `aosp/msm-kernel`, not `aosp/common`.
 - Append `CONFIG_KSU=y` to `msm-kernel/arch/arm64/configs/gki_defconfig`.
 - Do not put KSU/SUSFS symbols in `vendor/Asteroids.config`; duplicated vendor fragment values fail `check_merged_defconfig`.
@@ -70,6 +71,7 @@ Concise notes for future maintainers / AI agents.
 
 ## Artifacts
 
+- Use `include-hidden-files: true` for upload-artifact; otherwise `.config` appears in `out-file-list.txt` but is missing from downloaded artifacts.
 - Full `.ko` + `vmlinux` upload is huge, around 1.4 GB.
 - Upload both minimal and full artifacts from one build; do not require a rebuild just to fetch full outputs.
 - Minimal artifact should center on `boot.img` plus logs/config/symbols/inventory.

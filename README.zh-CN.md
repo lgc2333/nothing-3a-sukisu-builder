@@ -42,6 +42,13 @@
 - 结果：成功
 - 证据：SukiSU 和 SUSFS 步骤均为 skipped；`build-asteroids.log` 以 `Build completed successfully` 结束；minimal artifact 包含 `boot.img`、`boot-gz.img`、`boot-lz4.img`、`Image*`、`System.map`、`Module.symvers` 和日志。
 
+已验证的 SukiSU-only 基线：
+
+- Run: `28475657168`
+- 模式：`root_solution=sukisu`，`variant=gki`，`enable_kpm=false`
+- 结果：成功
+- 证据：SukiSU 集成完成，SUSFS 步骤为 skipped；`build-asteroids.log` 以 `Build completed successfully` 结束；minimal artifact 包含同样的 boot/image 输出集合。
+
 ## 输出
 
 workflow 会上传两个 artifact：

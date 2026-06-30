@@ -42,6 +42,13 @@ Known clean baseline:
 - Result: success
 - Evidence: SukiSU and SUSFS steps were skipped; `build-asteroids.log` ended with `Build completed successfully`; the minimal artifact contains `boot.img`, `boot-gz.img`, `boot-lz4.img`, `Image*`, `System.map`, `Module.symvers`, and logs.
 
+Known SukiSU-only baseline:
+
+- Run: `28475657168`
+- Mode: `root_solution=sukisu`, `variant=gki`, `enable_kpm=false`
+- Result: success
+- Evidence: SukiSU integration completed, SUSFS was skipped, `build-asteroids.log` ended with `Build completed successfully`, and the minimal artifact contains the same boot/image output set.
+
 ## Output
 
 The workflow uploads two artifacts:
