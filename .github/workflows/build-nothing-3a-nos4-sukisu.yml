@@ -140,6 +140,14 @@ jobs:
 
           repo sync -c -j4 --no-tags --fail-fast
           touch build/BUILD.bazel
+
+          if ! grep -q "super_image = " build/kernel/kleaf/kernel.bzl; then
+            git -C build/kernel fetch --depth=1 \
+              https://android.googlesource.com/kernel/build \
+              a32179752cfe632775839e1592c9d7f945d54fe1
+            git -C build/kernel cherry-pick --no-commit FETCH_HEAD
+          fi
+
           cat >> WORKSPACE <<'EOF'
 
           local_repository(
