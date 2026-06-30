@@ -15,32 +15,45 @@ for attempt in 1 2 3 4 5; do
   sleep $((attempt * 10))
 done
 
-cp "susfs4ksu/kernel_patches/50_add_susfs_in_${SUSFS_BRANCH}.patch" common/
-cp susfs4ksu/kernel_patches/fs/* common/fs/
-cp susfs4ksu/kernel_patches/include/linux/* common/include/linux/
+kernel_patch="susfs4ksu/kernel_patches/50_add_susfs_in_${SUSFS_BRANCH}.patch"
+ksu_patch="susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch"
 
-cd common
-patch -p1 -F 3 < "50_add_susfs_in_${SUSFS_BRANCH}.patch"
+for tree in common msm-kernel; do
+  cp "$kernel_patch" "$tree/"
+  cp susfs4ksu/kernel_patches/fs/* "$tree/fs/"
+  cp susfs4ksu/kernel_patches/include/linux/* "$tree/include/linux/"
+
+  (
+    cd "$tree"
+    patch -p1 -F 3 < "50_add_susfs_in_${SUSFS_BRANCH}.patch"
+  )
+done
+
+(
+  cd msm-kernel/KernelSU
+  if ! patch -p1 -F 3 --dry-run < "../../$ksu_patch"; then
+    echo "::error::SUSFS KernelSU patch does not apply to the selected SukiSU-Ultra ref."
+    echo "::error::Pin a compatible SukiSU ref or add a SukiSU-specific SUSFS adapter before enabling SUSFS."
+    exit 1
+  fi
+  patch -p1 -F 3 < "../../$ksu_patch"
+)
 
 for config in \
-  arch/arm64/configs/gki_defconfig \
-  ../msm-kernel/arch/arm64/configs/vendor/Asteroids.config
+  msm-kernel/arch/arm64/configs/gki_defconfig \
+  msm-kernel/arch/arm64/configs/vendor/Asteroids.config
 do
   {
     echo "# SUSFS"
     echo "CONFIG_KSU_SUSFS=y"
-    echo "CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT=y"
     echo "CONFIG_KSU_SUSFS_SUS_PATH=y"
     echo "CONFIG_KSU_SUSFS_SUS_MOUNT=y"
-    echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT=y"
-    echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT=y"
     echo "CONFIG_KSU_SUSFS_SUS_KSTAT=y"
-    echo "CONFIG_KSU_SUSFS_TRY_UMOUNT=y"
-    echo "CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT=y"
     echo "CONFIG_KSU_SUSFS_SPOOF_UNAME=y"
     echo "CONFIG_KSU_SUSFS_ENABLE_LOG=y"
     echo "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y"
     echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y"
     echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y"
+    echo "CONFIG_KSU_SUSFS_SUS_MAP=y"
   } >> "$config"
 done

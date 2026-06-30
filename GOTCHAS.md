@@ -36,6 +36,13 @@ Concise notes for future maintainers / AI agents.
   - `msm-kernel/arch/arm64/configs/vendor/Asteroids.config`
 - KPM and SUSFS are intentionally off by default. Enable them in separate runs.
 
+## SUSFS Status
+
+- Do not append SUSFS symbols to `common/arch/arm64/configs/gki_defconfig`; Kleaf `savedefconfig` removes unknown symbols and fails the build.
+- Patch/copy SUSFS into the tree that actually builds the image (`msm-kernel`) and keep `common` clean enough for its base config target.
+- `susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch` did not apply cleanly to tested SukiSU-Ultra refs (`main`, `v4.1.3`, `v4.1.2`, `v4.1.1`, `v4.1.0`, `v4.0.0`, `v3.2.0`, `v3.1.9`).
+- Current workflow intentionally fails early if that KernelSU/SukiSU SUSFS adapter patch does not apply; a successful SUSFS build needs a compatible SukiSU ref or a local SukiSU-specific adapter.
+
 ## Nothing / Asteroids Module Fixes
 
 - `ufs_qcom.ko` and `qcom_glink.ko` reference `nt_er_in_schedule`.
