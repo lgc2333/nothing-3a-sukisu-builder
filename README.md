@@ -31,7 +31,7 @@ Conservative first run:
 
 - `kernel_repo`: `NothingOSS/android_kernel_msm-6.1_nothing_sm7635`
 - `kernel_ref`: `sm7635/b/mr`
-- `variant`: `consolidate`
+- `variant`: `gki`
 - `sukisu_ref`: `main`
 - `enable_kpm`: `false`
 - `enable_susfs`: `false`
@@ -44,8 +44,8 @@ The workflow uploads:
 
 - build log
 - `Image`/compressed images if present
-- generated `*.img` files if present
-- `*.ko` modules if present
-- `System.map` and `vmlinux` if present
+- generated boot / vendor dlkm / dtbo images if present
+- `.config`, `Module.symvers`, `System.map`, and module load/order metadata if present
+- `out-file-list.txt` with the full output tree inventory
 
 Treat the first successful artifact as a build output to inspect, not as a guaranteed flashable package. Device-specific packaging and boot/vendor_boot replacement still need to be validated against the exact installed Nothing OS build.
