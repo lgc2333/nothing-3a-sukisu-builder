@@ -1,0 +1,246 @@
+name: Build Nothing 3a NOS4 SukiSU Kernel
+
+on:
+  workflow_dispatch:
+    inputs:
+      kernel_repo:
+        description: Nothing kernel repository
+        required: true
+        type: string
+        default: NothingOSS/android_kernel_msm-6.1_nothing_sm7635
+      kernel_ref:
+        description: Nothing kernel branch or commit
+        required: true
+        type: string
+        default: sm7635/b/mr
+      aosp_manifest_branch:
+        description: AOSP kernel manifest branch
+        required: true
+        type: string
+        default: common-android14-6.1-2025-05
+      variant:
+        description: Nothing build variant
+        required: true
+        type: choice
+        options:
+          - consolidate
+          - gki
+        default: consolidate
+      sukisu_ref:
+        description: SukiSU-Ultra setup ref
+        required: true
+        type: string
+        default: main
+      enable_kpm:
+        description: Enable SukiSU KPM
+        required: true
+        type: boolean
+        default: false
+      enable_susfs:
+        description: Apply SUSFS kernel patch
+        required: true
+        type: boolean
+        default: false
+      susfs_branch:
+        description: SUSFS branch for this GKI base
+        required: true
+        type: string
+        default: gki-android14-6.1
+      upload_artifacts:
+        description: Upload logs and build outputs
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+
+    steps:
+      - name: Maximize build space
+        uses: AdityaGarg8/remove-unwanted-software@v5
+        with:
+          remove-dotnet: 'true'
+          remove-android: 'true'
+          remove-haskell: 'true'
+          remove-codeql: 'true'
+          remove-docker-images: 'true'
+          remove-large-packages: 'true'
+          remove-swapfile: 'true'
+          verbose: 'true'
+
+      - name: Checkout builder
+        uses: actions/checkout@v6
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y \
+            bc \
+            bison \
+            ccache \
+            curl \
+            dwarves \
+            flex \
+            git \
+            jq \
+            libelf-dev \
+            libssl-dev \
+            lz4 \
+            python3 \
+            rsync \
+            unzip \
+            zip
+
+      - name: Configure ccache
+        run: |
+          mkdir -p "$HOME/.ccache"
+          ccache --max-size=3G
+          ccache --set-config=compression=true
+          echo "CCACHE_DIR=$HOME/.ccache" >> "$GITHUB_ENV"
+
+      - name: Restore ccache
+        uses: actions/cache@v5
+        with:
+          path: ~/.ccache
+          key: nothing-3a-nos4-${{ github.event.inputs.variant }}-${{ github.sha }}
+          restore-keys: |
+            nothing-3a-nos4-${{ github.event.inputs.variant }}-
+            nothing-3a-nos4-
+
+      - name: Install repo tool
+        run: |
+          curl -LSs https://storage.googleapis.com/git-repo-downloads/repo -o repo
+          chmod a+x repo
+          sudo mv repo /usr/local/bin/repo
+
+      - name: Checkout Nothing kernel source
+        run: |
+          git clone --depth=1 --branch "${{ github.event.inputs.kernel_ref }}" \
+            "https://github.com/${{ github.event.inputs.kernel_repo }}.git" msm-kernel
+          git -C msm-kernel log -1 --oneline
+          grep -n "Asteroids" msm-kernel/README.md || true
+
+      - name: Prepare AOSP kernel workspace
+        run: |
+          mkdir aosp
+          cd aosp
+          repo init --depth=1 \
+            -u https://android.googlesource.com/kernel/manifest \
+            -b "${{ github.event.inputs.aosp_manifest_branch }}" \
+            --repo-rev=v2.54
+
+          python3 - <<'PY'
+          from pathlib import Path
+
+          manifest = Path(".repo/manifests/default.xml")
+          text = manifest.read_text()
+          branch = "${{ github.event.inputs.aosp_manifest_branch }}".replace("common-", "")
+          text = text.replace(f'revision="{branch}"', f'revision="deprecated/{branch}"')
+          manifest.write_text(text)
+          PY
+
+          repo sync -c -j4 --no-tags --fail-fast
+          rm -rf msm-kernel
+          ln -s ../msm-kernel msm-kernel
+
+      - name: Integrate SukiSU Ultra
+        run: |
+          cd aosp
+          curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/${{ github.event.inputs.sukisu_ref }}/kernel/setup.sh" | bash -s builtin
+
+          for config in \
+            common/arch/arm64/configs/gki_defconfig \
+            msm-kernel/arch/arm64/configs/vendor/Asteroids.config
+          do
+            {
+              echo "# SukiSU Ultra"
+              echo "CONFIG_KSU=y"
+              if [ "${{ github.event.inputs.enable_kpm }}" = "true" ]; then
+                echo "CONFIG_KPM=y"
+              fi
+            } >> "$config"
+          done
+
+      - name: Apply SUSFS patch
+        if: ${{ github.event.inputs.enable_susfs == 'true' }}
+        run: |
+          cd aosp
+          git clone --depth=1 --branch "${{ github.event.inputs.susfs_branch }}" \
+            https://gitlab.com/simonpunk/susfs4ksu.git susfs4ksu
+
+          cp susfs4ksu/kernel_patches/50_add_susfs_in_${{ github.event.inputs.susfs_branch }}.patch common/
+          cp susfs4ksu/kernel_patches/fs/* common/fs/
+          cp susfs4ksu/kernel_patches/include/linux/* common/include/linux/
+
+          cd common
+          patch -p1 -F 3 < "50_add_susfs_in_${{ github.event.inputs.susfs_branch }}.patch"
+
+          for config in \
+            arch/arm64/configs/gki_defconfig \
+            ../msm-kernel/arch/arm64/configs/vendor/Asteroids.config
+          do
+            {
+              echo "# SUSFS"
+              echo "CONFIG_KSU_SUSFS=y"
+              echo "CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT=y"
+              echo "CONFIG_KSU_SUSFS_SUS_PATH=y"
+              echo "CONFIG_KSU_SUSFS_SUS_MOUNT=y"
+              echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT=y"
+              echo "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT=y"
+              echo "CONFIG_KSU_SUSFS_SUS_KSTAT=y"
+              echo "CONFIG_KSU_SUSFS_TRY_UMOUNT=y"
+              echo "CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT=y"
+              echo "CONFIG_KSU_SUSFS_SPOOF_UNAME=y"
+              echo "CONFIG_KSU_SUSFS_ENABLE_LOG=y"
+              echo "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y"
+              echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y"
+              echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y"
+            } >> "$config"
+          done
+
+      - name: Build kernel
+        run: |
+          cd aosp
+          export BUILD_CONFIG=msm-kernel/build.config.nothing.Asteroids
+          export VARIANT="${{ github.event.inputs.variant }}"
+          export SKIP_MRPROPER=1
+          export CCACHE_DIR="$HOME/.ccache"
+          build/build.sh 2>&1 | tee "$GITHUB_WORKSPACE/build-asteroids.log"
+
+      - name: Collect artifacts
+        if: always()
+        run: |
+          mkdir -p artifacts
+          cp build-asteroids.log artifacts/ || true
+
+          if [ -d aosp/out ]; then
+            cd aosp/out
+            while IFS= read -r file; do
+              dest="$GITHUB_WORKSPACE/artifacts/${file#./}"
+              mkdir -p "$(dirname "$dest")"
+              cp "$file" "$dest"
+            done < <(find . -type f \( \
+              -name 'Image' -o \
+              -name 'Image.gz' -o \
+              -name 'Image.lz4' -o \
+              -name '*.img' -o \
+              -name '*.ko' -o \
+              -name 'System.map' -o \
+              -name 'vmlinux' \
+            \))
+          fi
+
+          find artifacts -type f -maxdepth 6 -printf '%p\n' | sort
+
+      - name: Upload artifacts
+        if: ${{ always() && github.event.inputs.upload_artifacts == 'true' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: nothing-3a-nos4-sukisu-${{ github.event.inputs.variant }}
+          path: artifacts/
