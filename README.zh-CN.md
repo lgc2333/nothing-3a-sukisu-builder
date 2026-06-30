@@ -1,8 +1,8 @@
-# Nothing Phone (3a) NOS4 SukiSU 内核构建器
+# Nothing Phone (3a) NOS4 内核构建器
 
 [English](README.md) | 简体中文
 
-这是一个轻量 GitHub Actions 构建仓库，用于基于 Nothing 官方 SM7635 内核源码构建 Nothing Phone (3a) NOS4 的 SukiSU 内核。
+这是一个轻量 GitHub Actions 构建仓库，用于基于 Nothing 官方 SM7635 内核源码构建 Nothing Phone (3a) NOS4 内核。
 
 本仓库不内置内核源码。workflow 会拉取：
 
@@ -11,7 +11,7 @@
 - 目标产品：`Asteroids`
 - 构建目标：`pitti gki`
 - AOSP kernel manifest：`common-android14-6.1-2025-05`
-- Root 方案：`SukiSU-Ultra`
+- Root 模式：`none`、`sukisu`、`sukisu_susfs`
 
 ## 为什么有这个仓库
 
@@ -23,18 +23,24 @@
 
 ## 构建
 
-打开 **Actions -> Build Nothing 3a NOS4 SukiSU Kernel -> Run workflow**。
+打开 **Actions -> Build Nothing 3a NOS4 Kernel -> Run workflow**。
 
 建议第一次运行：
 
 - `kernel_repo`: `NothingOSS/android_kernel_msm-6.1_nothing_sm7635`
 - `kernel_ref`: `sm7635/b/mr`
 - `variant`: `gki`
-- `sukisu_ref`: `main`
+- `root_solution`: `none`
 - `enable_kpm`: `false`
-- `enable_susfs`: `false`
 
-普通 SukiSU 构建成功后，再分别启用 KPM 和 SUSFS，方便定位失败原因。
+先证明不集成 SukiSU/ResukiSU、不打 SUSFS、不做 root hook 的 Nothing 官方纯净内核可以构建成功。纯净基线成功后，再分别测试 root 集成和 SUSFS。
+
+已验证的纯净基线：
+
+- Run: `28472590894`
+- 模式：`root_solution=none`，`variant=gki`
+- 结果：成功
+- 证据：SukiSU 和 SUSFS 步骤均为 skipped；`build-asteroids.log` 以 `Build completed successfully` 结束；minimal artifact 包含 `boot.img`、`boot-gz.img`、`boot-lz4.img`、`Image*`、`System.map`、`Module.symvers` 和日志。
 
 ## 输出
 

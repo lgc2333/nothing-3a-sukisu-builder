@@ -28,13 +28,20 @@ Concise notes for future maintainers / AI agents.
 - Remove `:{}_super_image` and `:{}_unsparsed_image` from `msm_kernel_la.bzl` dist targets for this kernel-only workspace.
 - Build with `-s abl -s dtc`; ABL is unavailable and Qualcomm's dtc dist target is not needed here.
 
+## Clean Baseline
+
+- Run `28472590894` succeeded with `root_solution=none`, `variant=gki`.
+- In clean mode, SukiSU and SUSFS steps must be skipped.
+- Verified artifact names: `nothing-3a-nos4-none-gki-minimal` and `nothing-3a-nos4-none-gki-full`.
+- Minimal artifact contains `boot.img`, `boot-gz.img`, `boot-lz4.img`, `Image*`, `System.map`, `Module.symvers`, logs, and inventory.
+- `.config` in the downloaded minimal artifact had no `CONFIG_KSU`, `KSU_SUSFS`, `SUSFS`, or `KPM` matches.
+
 ## SukiSU Integration
 
 - Run SukiSU setup inside `aosp/msm-kernel`, not `aosp/common`.
-- Append `CONFIG_KSU=y` to both:
-  - `msm-kernel/arch/arm64/configs/gki_defconfig`
-  - `msm-kernel/arch/arm64/configs/vendor/Asteroids.config`
-- KPM and SUSFS are intentionally off by default. Enable them in separate runs.
+- Append `CONFIG_KSU=y` to `msm-kernel/arch/arm64/configs/gki_defconfig`.
+- Do not put KSU/SUSFS symbols in `vendor/Asteroids.config`; duplicated vendor fragment values fail `check_merged_defconfig`.
+- KPM and SUSFS are separate layers. Do not mix them into clean baseline validation.
 
 ## SUSFS Status
 

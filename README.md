@@ -1,8 +1,8 @@
-# Nothing Phone (3a) NOS4 SukiSU Kernel Builder
+# Nothing Phone (3a) NOS4 Kernel Builder
 
 English | [简体中文](README.zh-CN.md)
 
-Lightweight GitHub Actions builder for a Nothing Phone (3a) NOS4 SukiSU kernel based on Nothing's official SM7635 kernel source.
+Lightweight GitHub Actions builder for a Nothing Phone (3a) NOS4 kernel based on Nothing's official SM7635 kernel source.
 
 This repo intentionally does not vendor the kernel source. The workflow pulls:
 
@@ -11,7 +11,7 @@ This repo intentionally does not vendor the kernel source. The workflow pulls:
 - Target product: `Asteroids`
 - Build target: `pitti gki`
 - Base AOSP kernel manifest: `common-android14-6.1-2025-05`
-- Root solution: `SukiSU-Ultra`
+- Root modes: `none`, `sukisu`, `sukisu_susfs`
 
 ## Why This Repo Exists
 
@@ -23,18 +23,24 @@ The repo stays small so the Actions workflow can be iterated without maintaining
 
 ## Build
 
-Run **Actions -> Build Nothing 3a NOS4 SukiSU Kernel -> Run workflow**.
+Run **Actions -> Build Nothing 3a NOS4 Kernel -> Run workflow**.
 
 Recommended first run:
 
 - `kernel_repo`: `NothingOSS/android_kernel_msm-6.1_nothing_sm7635`
 - `kernel_ref`: `sm7635/b/mr`
 - `variant`: `gki`
-- `sukisu_ref`: `main`
+- `root_solution`: `none`
 - `enable_kpm`: `false`
-- `enable_susfs`: `false`
 
-After a plain SukiSU build succeeds, enable KPM and SUSFS in separate runs so failures are easier to isolate.
+First prove the clean Nothing kernel builds without SukiSU, ResukiSU, SUSFS, or any root hooks. Only after that baseline succeeds should root integrations be tested in separate runs.
+
+Known clean baseline:
+
+- Run: `28472590894`
+- Mode: `root_solution=none`, `variant=gki`
+- Result: success
+- Evidence: SukiSU and SUSFS steps were skipped; `build-asteroids.log` ended with `Build completed successfully`; the minimal artifact contains `boot.img`, `boot-gz.img`, `boot-lz4.img`, `Image*`, `System.map`, `Module.symvers`, and logs.
 
 ## Output
 
