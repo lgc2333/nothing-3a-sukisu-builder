@@ -34,8 +34,7 @@ fi
 
 for config in \
   common/arch/arm64/configs/gki_defconfig \
-  msm-kernel/arch/arm64/configs/gki_defconfig \
-  msm-kernel/arch/arm64/configs/vendor/Asteroids.config
+  msm-kernel/arch/arm64/configs/gki_defconfig
 do
   {
     echo "# SUSFS"

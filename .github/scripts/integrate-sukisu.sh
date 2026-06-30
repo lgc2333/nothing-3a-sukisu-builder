@@ -22,15 +22,10 @@ if [ "$ENABLE_SUSFS" = "true" ]; then
   cd ..
 fi
 
-for config in \
-  msm-kernel/arch/arm64/configs/gki_defconfig \
-  msm-kernel/arch/arm64/configs/vendor/Asteroids.config
-do
-  {
-    echo "# SukiSU Ultra"
-    echo "CONFIG_KSU=y"
-    if [ "$ENABLE_KPM" = "true" ]; then
-      echo "CONFIG_KPM=y"
-    fi
-  } >> "$config"
-done
+{
+  echo "# SukiSU Ultra"
+  echo "CONFIG_KSU=y"
+  if [ "$ENABLE_KPM" = "true" ]; then
+    echo "CONFIG_KPM=y"
+  fi
+} >> msm-kernel/arch/arm64/configs/gki_defconfig

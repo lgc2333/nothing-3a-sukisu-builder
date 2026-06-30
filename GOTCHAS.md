@@ -41,6 +41,7 @@ Concise notes for future maintainers / AI agents.
 - Original community workflows append SUSFS symbols to `common/arch/arm64/configs/gki_defconfig` and disable `check_defconfig`.
 - Without disabling that check, Kleaf `savedefconfig` removes unknown SUSFS symbols and fails the build.
 - For this mixed Nothing build, patch/copy SUSFS into both `common` and `msm-kernel` while testing; the exact minimal tree is still being verified.
+- Put KSU/SUSFS symbols in `gki_defconfig`, not `vendor/Asteroids.config`; duplicated vendor fragment values fail `check_merged_defconfig`.
 - Do not require `susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch`; the referenced community workflows do not apply it for SukiSU-Ultra.
 
 ## Nothing / Asteroids Module Fixes
