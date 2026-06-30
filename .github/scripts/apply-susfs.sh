@@ -4,7 +4,16 @@ set -euo pipefail
 : "${SUSFS_BRANCH:?}"
 
 cd aosp
-git clone --depth=1 --branch "$SUSFS_BRANCH" https://gitlab.com/simonpunk/susfs4ksu.git susfs4ksu
+for attempt in 1 2 3 4 5; do
+  if git clone --depth=1 --branch "$SUSFS_BRANCH" https://gitlab.com/simonpunk/susfs4ksu.git susfs4ksu; then
+    break
+  fi
+  rm -rf susfs4ksu
+  if [ "$attempt" = 5 ]; then
+    exit 1
+  fi
+  sleep $((attempt * 10))
+done
 
 cp "susfs4ksu/kernel_patches/50_add_susfs_in_${SUSFS_BRANCH}.patch" common/
 cp susfs4ksu/kernel_patches/fs/* common/fs/
