@@ -43,6 +43,8 @@ install_resukisu() {
     cd "$tree"
     curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/${RESUKISU_REF}/kernel/setup.sh" |
       bash -s "$RESUKISU_REF"
+    ksu_src="$(pwd)/KernelSU/kernel"
+    sed -i "s|^KSU_SRC := .*|KSU_SRC := ${ksu_src}|" "$ksu_src/Kbuild"
   )
 }
 

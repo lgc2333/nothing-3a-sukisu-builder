@@ -39,7 +39,7 @@ Root 集成按层拆开：
 
 - `sukisu`：已验证的 SukiSU-only root 层。
 - `sukisu_susfs`：已验证的 SukiSU + SUSFS 层。
-- `resukisu`：实验性的 ReSukiSU-only 层；目前还没有把 SUSFS 接到 ReSukiSU。
+- `resukisu`：实验性的 ReSukiSU-only 层；目前还没有把 SUSFS 接到 ReSukiSU。该模式会为 Bazel/Kleaf sandbox 构建重写 ReSukiSU 的 `KSU_SRC`。
 
 已验证的纯净基线：
 

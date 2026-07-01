@@ -45,6 +45,7 @@ Concise notes for future maintainers / AI agents.
 - Do not put KSU/SUSFS symbols in `vendor/Asteroids.config`; duplicated vendor fragment values fail `check_merged_defconfig`.
 - KPM and SUSFS are separate layers. Do not mix them into clean baseline validation.
 - `resukisu` is currently root-only. Do not route SUSFS through it until the adapter is checked against ReSukiSU's source layout.
+- ReSukiSU `Kbuild` rejects Bazel sandbox builds when it cannot see a git submodule; rewrite `KSU_SRC` to the absolute `KernelSU/kernel` path after setup.
 
 ## SUSFS Status
 

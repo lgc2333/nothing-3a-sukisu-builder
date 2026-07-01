@@ -39,7 +39,7 @@ Root integration is intentionally layered:
 
 - `sukisu`: verified SukiSU-only root layer.
 - `sukisu_susfs`: verified SukiSU + SUSFS layer.
-- `resukisu`: experimental ReSukiSU-only layer; SUSFS is not wired to ReSukiSU yet.
+- `resukisu`: experimental ReSukiSU-only layer; SUSFS is not wired to ReSukiSU yet. This mode rewrites ReSukiSU `KSU_SRC` for Bazel/Kleaf sandbox builds.
 
 Known clean baseline:
 
