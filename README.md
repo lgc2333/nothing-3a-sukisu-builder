@@ -11,7 +11,7 @@ This repo intentionally does not vendor the kernel source. The workflow pulls:
 - Target product: `Asteroids`
 - Build target: `pitti gki`
 - Base AOSP kernel manifest: `common-android14-6.1-2025-05`
-- Root modes: `none`, `sukisu`, `sukisu_susfs`
+- Root modes: `none`, `sukisu`, `sukisu_susfs`, `resukisu`
 
 ## Why This Repo Exists
 
@@ -34,6 +34,12 @@ Recommended first run:
 - `enable_kpm`: `false`
 
 First prove the clean Nothing kernel builds without SukiSU, ResukiSU, SUSFS, or any root hooks. Only after that baseline succeeds should root integrations be tested in separate runs.
+
+Root integration is intentionally layered:
+
+- `sukisu`: verified SukiSU-only root layer.
+- `sukisu_susfs`: verified SukiSU + SUSFS layer.
+- `resukisu`: experimental ReSukiSU-only layer; SUSFS is not wired to ReSukiSU yet.
 
 Known clean baseline:
 

@@ -39,9 +39,15 @@ on:
           - none
           - sukisu
           - sukisu_susfs
+          - resukisu
         default: none
       sukisu_ref:
         description: SukiSU-Ultra setup ref
+        required: true
+        type: string
+        default: main
+      resukisu_ref:
+        description: ReSukiSU setup ref
         required: true
         type: string
         default: main
@@ -136,13 +142,15 @@ jobs:
           DTC_REF: ${{ github.event.inputs.dtc_ref }}
         run: bash .github/scripts/prepare-workspace.sh
 
-      - name: Integrate SukiSU Ultra
+      - name: Integrate root solution
         if: ${{ github.event.inputs.root_solution != 'none' }}
         env:
+          ROOT_SOLUTION: ${{ github.event.inputs.root_solution }}
           SUKISU_REF: ${{ github.event.inputs.sukisu_ref }}
+          RESUKISU_REF: ${{ github.event.inputs.resukisu_ref }}
           ENABLE_KPM: ${{ github.event.inputs.enable_kpm }}
           ENABLE_SUSFS: ${{ github.event.inputs.root_solution == 'sukisu_susfs' }}
-        run: bash .github/scripts/integrate-sukisu.sh
+        run: bash .github/scripts/integrate-root.sh
 
       - name: Apply SUSFS patch
         if: ${{ github.event.inputs.root_solution == 'sukisu_susfs' }}

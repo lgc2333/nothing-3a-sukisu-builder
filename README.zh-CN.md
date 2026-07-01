@@ -11,7 +11,7 @@
 - 目标产品：`Asteroids`
 - 构建目标：`pitti gki`
 - AOSP kernel manifest：`common-android14-6.1-2025-05`
-- Root 模式：`none`、`sukisu`、`sukisu_susfs`
+- Root 模式：`none`、`sukisu`、`sukisu_susfs`、`resukisu`
 
 ## 为什么有这个仓库
 
@@ -34,6 +34,12 @@
 - `enable_kpm`: `false`
 
 先证明不集成 SukiSU/ResukiSU、不打 SUSFS、不做 root hook 的 Nothing 官方纯净内核可以构建成功。纯净基线成功后，再分别测试 root 集成和 SUSFS。
+
+Root 集成按层拆开：
+
+- `sukisu`：已验证的 SukiSU-only root 层。
+- `sukisu_susfs`：已验证的 SukiSU + SUSFS 层。
+- `resukisu`：实验性的 ReSukiSU-only 层；目前还没有把 SUSFS 接到 ReSukiSU。
 
 已验证的纯净基线：
 
