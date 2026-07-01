@@ -39,7 +39,7 @@ Root 集成按层拆开：
 
 - `sukisu`：已验证的 SukiSU-only root 层。
 - `sukisu_susfs`：已验证的 SukiSU + SUSFS 层。
-- `resukisu`：实验性的 ReSukiSU-only 层；目前还没有把 SUSFS 接到 ReSukiSU。该模式会为 Bazel/Kleaf sandbox 构建重写 ReSukiSU 的 `KSU_SRC`。
+- `resukisu`：已验证的 ReSukiSU-only root 层；目前还没有把 SUSFS 接到 ReSukiSU。该模式会为 Bazel/Kleaf sandbox 构建重写 ReSukiSU 的 `KSU_SRC`。
 
 已验证的纯净基线：
 
@@ -62,6 +62,14 @@ Root 集成按层拆开：
 - 结果：成功
 - 证据：SukiSU 集成和 SUSFS patch 均完成；`build-asteroids.log` 记录 `SUSFS_VERSION: v2.2.0`，并以 `Build completed successfully` 结束；下载后的 minimal artifact 包含 `.config` 和 `boot.img`。
 - 配置证据：`CONFIG_KSU=y`、`CONFIG_KSU_SUSFS=y`，并且 `# CONFIG_KPM is not set`。
+
+已验证的 ReSukiSU-only 基线：
+
+- Run: `28486642369`
+- 模式：`root_solution=resukisu`，`variant=gki`，`enable_kpm=false`
+- 结果：成功
+- 证据：ReSukiSU 集成完成，SUSFS 步骤为 skipped；`build-asteroids.log` 记录 `KERNEL_TYPE: GKI 2.0`、`ReSukiSU: using Tracepoint Syscall Redirect Hook`，并以 `Build completed successfully` 结束。
+- 配置证据：`CONFIG_KSU=y`，并且 `# CONFIG_KSU_SUSFS is not set`。
 
 ## 输出
 

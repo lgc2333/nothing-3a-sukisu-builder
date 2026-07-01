@@ -39,7 +39,7 @@ Root integration is intentionally layered:
 
 - `sukisu`: verified SukiSU-only root layer.
 - `sukisu_susfs`: verified SukiSU + SUSFS layer.
-- `resukisu`: experimental ReSukiSU-only layer; SUSFS is not wired to ReSukiSU yet. This mode rewrites ReSukiSU `KSU_SRC` for Bazel/Kleaf sandbox builds.
+- `resukisu`: verified ReSukiSU-only root layer; SUSFS is not wired to ReSukiSU yet. This mode rewrites ReSukiSU `KSU_SRC` for Bazel/Kleaf sandbox builds.
 
 Known clean baseline:
 
@@ -62,6 +62,14 @@ Known SukiSU + SUSFS baseline:
 - Result: success
 - Evidence: SukiSU integration and SUSFS patching completed, `build-asteroids.log` reported `SUSFS_VERSION: v2.2.0` and ended with `Build completed successfully`, and the downloaded minimal artifact includes `.config` plus `boot.img`.
 - Config evidence: `CONFIG_KSU=y`, `CONFIG_KSU_SUSFS=y`, and `# CONFIG_KPM is not set`.
+
+Known ReSukiSU-only baseline:
+
+- Run: `28486642369`
+- Mode: `root_solution=resukisu`, `variant=gki`, `enable_kpm=false`
+- Result: success
+- Evidence: ReSukiSU integration completed, SUSFS was skipped, `build-asteroids.log` reported `KERNEL_TYPE: GKI 2.0`, `ReSukiSU: using Tracepoint Syscall Redirect Hook`, and ended with `Build completed successfully`.
+- Config evidence: `CONFIG_KSU=y` and `# CONFIG_KSU_SUSFS is not set`.
 
 ## Output
 

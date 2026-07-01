@@ -39,12 +39,13 @@ Concise notes for future maintainers / AI agents.
 ## SukiSU Integration
 
 - Run `28475657168` succeeded with `root_solution=sukisu`, `variant=gki`, `enable_kpm=false`.
+- Run `28486642369` succeeded with `root_solution=resukisu`, `variant=gki`, `enable_kpm=false`.
 - Root setup lives in `.github/scripts/integrate-root.sh`; keep clean, SukiSU, ReSukiSU, and SUSFS branches explicit.
 - Run SukiSU setup inside `aosp/msm-kernel`, not `aosp/common`, unless testing the verified `sukisu_susfs` path.
 - Append `CONFIG_KSU=y` to `msm-kernel/arch/arm64/configs/gki_defconfig`.
 - Do not put KSU/SUSFS symbols in `vendor/Asteroids.config`; duplicated vendor fragment values fail `check_merged_defconfig`.
 - KPM and SUSFS are separate layers. Do not mix them into clean baseline validation.
-- `resukisu` is currently root-only. Do not route SUSFS through it until the adapter is checked against ReSukiSU's source layout.
+- `resukisu` is verified root-only. Do not route SUSFS through it until the adapter is checked against ReSukiSU's source layout.
 - ReSukiSU `Kbuild` rejects Bazel sandbox builds when it cannot see a git submodule; rewrite `KSU_SRC` to the absolute `KernelSU/kernel` path after setup.
 
 ## SUSFS Status
