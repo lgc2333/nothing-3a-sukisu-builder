@@ -40,7 +40,7 @@ Root integration is intentionally layered:
 - `sukisu`: verified SukiSU-only root layer.
 - `sukisu_susfs`: verified SukiSU + SUSFS layer.
 - `resukisu`: verified ReSukiSU-only root layer. This mode rewrites ReSukiSU `KSU_SRC` for Bazel/Kleaf sandbox builds.
-- `resukisu_susfs`: experimental ReSukiSU + SUSFS layer. ReSukiSU already carries SUSFS Kconfig/compat code, so this path skips the SukiSU-specific SUSFS adapter.
+- `resukisu_susfs`: verified ReSukiSU + SUSFS layer. ReSukiSU already carries SUSFS Kconfig/compat code, so this path skips the SukiSU-specific SUSFS adapter.
 
 KPM note: SukiSU exposes `CONFIG_KPM`; the current ReSukiSU source used here does not.
 
@@ -73,6 +73,14 @@ Known ReSukiSU-only baseline:
 - Result: success
 - Evidence: ReSukiSU integration completed, SUSFS was skipped, `build-asteroids.log` reported `KERNEL_TYPE: GKI 2.0`, `ReSukiSU: using Tracepoint Syscall Redirect Hook`, and ended with `Build completed successfully`.
 - Config evidence: `CONFIG_KSU=y` and `# CONFIG_KSU_SUSFS is not set`.
+
+Known ReSukiSU + SUSFS baseline:
+
+- Run: `28494030221`
+- Mode: `root_solution=resukisu_susfs`, `variant=gki`, `enable_kpm=false`
+- Result: success
+- Evidence: ReSukiSU integration and SUSFS patching completed, `build-asteroids.log` reported `ReSukiSU: using SuSFS Inline hook`, `SUSFS_VERSION: v2.2.0`, and ended with `Build completed successfully`.
+- Config evidence: `CONFIG_KSU=y`, `CONFIG_KSU_SUSFS=y`, and no `CONFIG_KPM` option is present for ReSukiSU.
 
 ## Output
 
