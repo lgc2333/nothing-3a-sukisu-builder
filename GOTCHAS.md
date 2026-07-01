@@ -62,6 +62,7 @@ Concise notes for future maintainers / AI agents.
 - SUSFS expects `ksu_handle_sys_read(unsigned int fd)`. Current SukiSU has a static 3-argument helper, so keep it as an internal impl and export a one-argument wrapper.
 - The successful SUSFS config has `CONFIG_KSU=y`, `CONFIG_KSU_SUSFS=y`, and `# CONFIG_KPM is not set`.
 - ReSukiSU already carries SUSFS Kconfig and compatibility code, including `ksu_handle_vfs_fstat`, `ksu_handle_susfs_cmd`, and `susfs_is_current_ksu_domain`; skip Kconfig injection and SukiSU adapter there.
+- ReSukiSU's SUSFS Kconfig lacks SukiSU-only extras such as `KSU_SUSFS_HAS_MAGIC_MOUNT`, `AUTO_ADD_*`, and `TRY_UMOUNT`; do not append those for `resukisu_susfs`.
 
 ## Nothing / Asteroids Module Fixes
 
