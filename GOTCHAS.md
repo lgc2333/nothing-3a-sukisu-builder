@@ -46,14 +46,16 @@ Concise notes for future maintainers / AI agents.
 
 ## SUSFS Status
 
+- Run `28481638077` succeeded with `root_solution=sukisu_susfs`, `variant=gki`, `enable_kpm=false`.
 - Original community workflows append SUSFS symbols to `common/arch/arm64/configs/gki_defconfig` and disable `check_defconfig`.
 - Without disabling that check, Kleaf `savedefconfig` removes unknown SUSFS symbols and fails the build.
-- For this mixed Nothing build, patch/copy SUSFS into both `common` and `msm-kernel` while testing; the exact minimal tree is still being verified.
+- For this mixed Nothing build, patch/copy SUSFS into both `common` and `msm-kernel`; the build passes, but a narrower final patch surface may still be possible.
 - Put KSU/SUSFS symbols in `gki_defconfig`, not `vendor/Asteroids.config`; duplicated vendor fragment values fail `check_merged_defconfig`.
 - SukiSU-Ultra main does not define SUSFS Kconfig symbols by default; inject minimal symbol definitions rather than applying the full incompatible `10_enable_susfs_for_ksu.patch`.
 - Do not require `susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch`; the referenced community workflows do not apply it for SukiSU-Ultra.
 - Do not test optional text replacements with `new in text` when `new` is a substring of `old`; it skipped exporting `fake_state` from `static struct selinux_state fake_state;`.
 - SUSFS expects `ksu_handle_sys_read(unsigned int fd)`. Current SukiSU has a static 3-argument helper, so keep it as an internal impl and export a one-argument wrapper.
+- The successful SUSFS config has `CONFIG_KSU=y`, `CONFIG_KSU_SUSFS=y`, and `# CONFIG_KPM is not set`.
 
 ## Nothing / Asteroids Module Fixes
 

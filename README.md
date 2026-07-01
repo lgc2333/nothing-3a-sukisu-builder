@@ -49,6 +49,14 @@ Known SukiSU-only baseline:
 - Result: success
 - Evidence: SukiSU integration completed, SUSFS was skipped, `build-asteroids.log` ended with `Build completed successfully`, and the minimal artifact contains the same boot/image output set.
 
+Known SukiSU + SUSFS baseline:
+
+- Run: `28481638077`
+- Mode: `root_solution=sukisu_susfs`, `variant=gki`, `enable_kpm=false`
+- Result: success
+- Evidence: SukiSU integration and SUSFS patching completed, `build-asteroids.log` reported `SUSFS_VERSION: v2.2.0` and ended with `Build completed successfully`, and the downloaded minimal artifact includes `.config` plus `boot.img`.
+- Config evidence: `CONFIG_KSU=y`, `CONFIG_KSU_SUSFS=y`, and `# CONFIG_KPM is not set`.
+
 ## Output
 
 The workflow uploads two artifacts:
