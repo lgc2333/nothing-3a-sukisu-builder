@@ -45,7 +45,8 @@ Concise notes for future maintainers / AI agents.
 - Append `CONFIG_KSU=y` to `msm-kernel/arch/arm64/configs/gki_defconfig`.
 - Do not put KSU/SUSFS symbols in `vendor/Asteroids.config`; duplicated vendor fragment values fail `check_merged_defconfig`.
 - KPM and SUSFS are separate layers. Do not mix them into clean baseline validation.
-- `resukisu` is verified root-only. Do not route SUSFS through it until the adapter is checked against ReSukiSU's source layout.
+- SukiSU exposes `CONFIG_KPM`; current ReSukiSU does not. Keep `enable_kpm=true` rejected for ReSukiSU modes.
+- `resukisu` is verified root-only. `resukisu_susfs` is a separate path and must not run the SukiSU-specific SUSFS adapter.
 - ReSukiSU `Kbuild` rejects Bazel sandbox builds when it cannot see a git submodule; rewrite `KSU_SRC` to the absolute `KernelSU/kernel` path after setup.
 
 ## SUSFS Status
@@ -60,6 +61,7 @@ Concise notes for future maintainers / AI agents.
 - Do not test optional text replacements with `new in text` when `new` is a substring of `old`; it skipped exporting `fake_state` from `static struct selinux_state fake_state;`.
 - SUSFS expects `ksu_handle_sys_read(unsigned int fd)`. Current SukiSU has a static 3-argument helper, so keep it as an internal impl and export a one-argument wrapper.
 - The successful SUSFS config has `CONFIG_KSU=y`, `CONFIG_KSU_SUSFS=y`, and `# CONFIG_KPM is not set`.
+- ReSukiSU already carries SUSFS Kconfig and compatibility code, including `ksu_handle_vfs_fstat`, `ksu_handle_susfs_cmd`, and `susfs_is_current_ksu_domain`; skip Kconfig injection and SukiSU adapter there.
 
 ## Nothing / Asteroids Module Fixes
 

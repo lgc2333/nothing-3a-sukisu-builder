@@ -11,7 +11,7 @@ This repo intentionally does not vendor the kernel source. The workflow pulls:
 - Target product: `Asteroids`
 - Build target: `pitti gki`
 - Base AOSP kernel manifest: `common-android14-6.1-2025-05`
-- Root modes: `none`, `sukisu`, `sukisu_susfs`, `resukisu`
+- Root modes: `none`, `sukisu`, `sukisu_susfs`, `resukisu`, `resukisu_susfs`
 
 ## Why This Repo Exists
 
@@ -39,7 +39,10 @@ Root integration is intentionally layered:
 
 - `sukisu`: verified SukiSU-only root layer.
 - `sukisu_susfs`: verified SukiSU + SUSFS layer.
-- `resukisu`: verified ReSukiSU-only root layer; SUSFS is not wired to ReSukiSU yet. This mode rewrites ReSukiSU `KSU_SRC` for Bazel/Kleaf sandbox builds.
+- `resukisu`: verified ReSukiSU-only root layer. This mode rewrites ReSukiSU `KSU_SRC` for Bazel/Kleaf sandbox builds.
+- `resukisu_susfs`: experimental ReSukiSU + SUSFS layer. ReSukiSU already carries SUSFS Kconfig/compat code, so this path skips the SukiSU-specific SUSFS adapter.
+
+KPM note: SukiSU exposes `CONFIG_KPM`; the current ReSukiSU source used here does not.
 
 Known clean baseline:
 

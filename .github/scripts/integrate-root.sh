@@ -59,13 +59,14 @@ case "$ROOT_SOLUTION" in
 
     append_ksu_config aosp/msm-kernel/arch/arm64/configs/gki_defconfig "SukiSU Ultra"
     ;;
-  resukisu)
+  resukisu|resukisu_susfs)
+    install_resukisu aosp/msm-kernel
+
     if [ "$ENABLE_SUSFS" = "true" ]; then
-      echo "ReSukiSU + SUSFS is not wired yet; use root_solution=sukisu_susfs for the verified SUSFS path." >&2
-      exit 2
+      install_resukisu aosp/common
+      append_ksu_config aosp/common/arch/arm64/configs/gki_defconfig "ReSukiSU"
     fi
 
-    install_resukisu aosp/msm-kernel
     append_ksu_config aosp/msm-kernel/arch/arm64/configs/gki_defconfig "ReSukiSU"
     ;;
   *)

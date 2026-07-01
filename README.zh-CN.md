@@ -11,7 +11,7 @@
 - 目标产品：`Asteroids`
 - 构建目标：`pitti gki`
 - AOSP kernel manifest：`common-android14-6.1-2025-05`
-- Root 模式：`none`、`sukisu`、`sukisu_susfs`、`resukisu`
+- Root 模式：`none`、`sukisu`、`sukisu_susfs`、`resukisu`、`resukisu_susfs`
 
 ## 为什么有这个仓库
 
@@ -39,7 +39,10 @@ Root 集成按层拆开：
 
 - `sukisu`：已验证的 SukiSU-only root 层。
 - `sukisu_susfs`：已验证的 SukiSU + SUSFS 层。
-- `resukisu`：已验证的 ReSukiSU-only root 层；目前还没有把 SUSFS 接到 ReSukiSU。该模式会为 Bazel/Kleaf sandbox 构建重写 ReSukiSU 的 `KSU_SRC`。
+- `resukisu`：已验证的 ReSukiSU-only root 层。该模式会为 Bazel/Kleaf sandbox 构建重写 ReSukiSU 的 `KSU_SRC`。
+- `resukisu_susfs`：实验性的 ReSukiSU + SUSFS 层。ReSukiSU 自带 SUSFS Kconfig/compat 代码，因此这个路径会跳过 SukiSU 专用 SUSFS adapter。
+
+KPM 备注：SukiSU 暴露 `CONFIG_KPM`；这里使用的当前 ReSukiSU 源码没有这个配置项。
 
 已验证的纯净基线：
 

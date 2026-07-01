@@ -40,6 +40,7 @@ on:
           - sukisu
           - sukisu_susfs
           - resukisu
+          - resukisu_susfs
         default: none
       sukisu_ref:
         description: SukiSU-Ultra setup ref
@@ -149,12 +150,13 @@ jobs:
           SUKISU_REF: ${{ github.event.inputs.sukisu_ref }}
           RESUKISU_REF: ${{ github.event.inputs.resukisu_ref }}
           ENABLE_KPM: ${{ github.event.inputs.enable_kpm }}
-          ENABLE_SUSFS: ${{ github.event.inputs.root_solution == 'sukisu_susfs' }}
+          ENABLE_SUSFS: ${{ github.event.inputs.root_solution == 'sukisu_susfs' || github.event.inputs.root_solution == 'resukisu_susfs' }}
         run: bash .github/scripts/integrate-root.sh
 
       - name: Apply SUSFS patch
-        if: ${{ github.event.inputs.root_solution == 'sukisu_susfs' }}
+        if: ${{ github.event.inputs.root_solution == 'sukisu_susfs' || github.event.inputs.root_solution == 'resukisu_susfs' }}
         env:
+          ROOT_SOLUTION: ${{ github.event.inputs.root_solution }}
           SUSFS_BRANCH: ${{ github.event.inputs.susfs_branch }}
         run: bash .github/scripts/apply-susfs.sh
 

@@ -2,6 +2,7 @@
 set -euo pipefail
 
 : "${SUSFS_BRANCH:?}"
+: "${ROOT_SOLUTION:=sukisu_susfs}"
 
 cd aosp
 for attempt in 1 2 3 4 5; do
@@ -28,13 +29,14 @@ for tree in common msm-kernel; do
   )
 done
 
-python3 ../.github/scripts/patch-sukisu-susfs-adapter.py common msm-kernel
+if [ "$ROOT_SOLUTION" = "sukisu_susfs" ]; then
+  python3 ../.github/scripts/patch-sukisu-susfs-adapter.py common msm-kernel
 
-for ksu_dir in common/KernelSU/kernel msm-kernel/KernelSU/kernel; do
-  kconfig="$ksu_dir/Kconfig"
-  makefile="$ksu_dir/Makefile"
-  if ! grep -q "config KSU_SUSFS" "$kconfig"; then
-    sed -i '/^endmenu/i\
+  for ksu_dir in common/KernelSU/kernel msm-kernel/KernelSU/kernel; do
+    kconfig="$ksu_dir/Kconfig"
+    makefile="$ksu_dir/Makefile"
+    if ! grep -q "config KSU_SUSFS" "$kconfig"; then
+      sed -i '/^endmenu/i\
 menu "KernelSU - SUSFS"\
 \
 config KSU_SUSFS\
@@ -115,18 +117,19 @@ config KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT\
 \
 endmenu\
 ' "$kconfig"
-  fi
+    fi
 
-  if ! grep -q "SUSFS_VERSION" "$makefile"; then
-    cat >> "$makefile" <<'EOF'
+    if ! grep -q "SUSFS_VERSION" "$makefile"; then
+      cat >> "$makefile" <<'EOF'
 
 ifeq ($(shell test -e $(srctree)/fs/susfs.c; echo $$?),0)
 $(eval SUSFS_VERSION=$(shell grep -E '^#define SUSFS_VERSION' $(srctree)/include/linux/susfs.h | cut -d' ' -f3 | sed 's/"//g'))
 $(info -- SUSFS_VERSION: $(SUSFS_VERSION))
 endif
 EOF
-  fi
-done
+    fi
+  done
+fi
 
 if [ -f common/build.config.gki ]; then
   sed -i 's/check_defconfig//g' common/build.config.gki
